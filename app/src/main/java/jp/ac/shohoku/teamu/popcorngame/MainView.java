@@ -30,11 +30,14 @@ public class MainView extends View {
         if (state == FIRST) { //状態 1 の場合の描画
             p.setColor(Color.BLUE);
             canvas.drawARGB(255, 255, 255, 255);
-            canvas.drawRect(100, 100, 300, 200, p);
+            canvas.drawRect(300, 1150, 900,1250, p);
+            p.setColor(Color.WHITE);
+            p.setTextSize(50);
+            canvas.drawText("スタート", 500, 1220, p);
         } else if (state == SECOND) { //状態 2 の場合の描画
             p.setColor(Color.RED);
             canvas.drawARGB(255, 255, 255, 0);
-            canvas.drawRect(100, 100, 300, 200, p);
+            canvas.drawRect(300, 1150, 900, 1250, p);
         } else { //それ以外の場合は，Log にエラーを吐き出す
             Log.d("error", "never come here");
         }
@@ -45,7 +48,7 @@ public class MainView extends View {
         int y = (int) event.getY();
 
         //長方形の内部で
-        if(x>100 && x<300 && y>100 && y<200) {
+        if(x>300 && x<900 && y>1150 && y<1250) {
             if (state == FIRST) {  //状態１だったら状態２へ
                 state = SECOND;
             } else if (state == SECOND) {  //状態２だったら状態１へ
