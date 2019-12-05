@@ -98,7 +98,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         if(state == SECOND){
             if(mLvTime >= 10000){  //この中にゲーム中の処理が来る
                 if(mLvTime == 1000){
-
+                    
                 }
                 state = THIRD;
             }
