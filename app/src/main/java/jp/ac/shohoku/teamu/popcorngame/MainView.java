@@ -26,6 +26,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     int state; //状態を表す変数
     private long gameStart, gameTime;
     Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.start);
+    //PopcornSample popco;
 
     private SurfaceHolder mHolder;
     private int mGameState;  //ゲームの状態を表す変数
@@ -48,6 +49,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         requestFocus();
         state = FIRST;  //はじめは状態 1
         mLvStart = System.currentTimeMillis();
+        //popco = new PopcornSample();
     }
 
     @Override
@@ -123,7 +125,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private void draw(){
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(Color.WHITE);
-        //PopcornSample popco = new PopcornSample();
         Paint p = new Paint();
         if (state == FIRST) { //状態 1 の場合の描画
             canvas.drawBitmap(bmp, 300, 1150, p);
