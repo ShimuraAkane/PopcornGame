@@ -6,12 +6,13 @@ import android.graphics.BitmapFactory;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.view.SurfaceView;
 import android.view.View;
 
-public class PopcornSample extends Activity {
+public class PopcornSample {
     Bitmap popcorn;
-    public PopcornSample(){
-        popcorn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tekitou), 100, 100, true);
+    public PopcornSample(SurfaceView sView){
+        popcorn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(sView.getResources(), R.drawable.tekitou), 100, 100, true);
     }
 
     public void draw(Canvas canvas, Paint paint){

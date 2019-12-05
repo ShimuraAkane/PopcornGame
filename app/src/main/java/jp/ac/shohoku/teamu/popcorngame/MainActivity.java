@@ -10,9 +10,11 @@ import android.widget.LinearLayout;
 import android.view.View.OnClickListener;
 
 public class MainActivity extends AppCompatActivity {
+    PopcornSample popco;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
 }
