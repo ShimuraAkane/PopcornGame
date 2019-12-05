@@ -2,7 +2,6 @@ package jp.ac.shohoku.teamu.popcorngame;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.CountDownTimer;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -14,8 +13,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.Button;
-import android.widget.TextView;
+import android.animation.*;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -52,22 +50,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         mLvStart = System.currentTimeMillis();
     }
 
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-//        Paint p = new Paint();
-//        if (state == FIRST) { //状態 1 の場合の描画
-//            canvas.drawBitmap(bmp, 300, 1150, p);
-//        } else if (state == SECOND) { //状態 2 の場合の描画
-//            canvas.drawARGB(255, 255, 255, 0);
-//        } else if(state == THIRD) {
-//            canvas.drawARGB(255, 255, 255, 255);
-//        }
-//        else { //それ以外の場合は，Log にエラーを吐き出す
-//            Log.d("error", "never come here");
-//        }
-//    }
-
     @Override
     public boolean onTouchEvent(MotionEvent event){
         int x = (int) event.getX();
@@ -83,7 +65,13 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         } else if (state == SECOND) {  //状態２だったら押しても意味ない
 
         } else if(state == THIRD){  //状態３だったら状態1へ
-            state = FIRST;
+            if(x>300 && x<900 && y>1050 && y<1150) {  //リトライ
+                state = SECOND;
+                mLvStart = System.currentTimeMillis();
+            }
+            if(x>300 && x<900 && y>1200 && y<1300) {  //タイトル画面へ
+                state = FIRST;
+            }
         }
         else {  //それ以外だったらエラーを吐き出す
             Log.d("error", "never come here");
@@ -95,19 +83,21 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
 
     private void start(){
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(this, 10, 10, TimeUnit.MILLISECONDS); //スタート画面→黄色い画面→白い画面
+        executor.scheduleAtFixedRate(this, 10, 10, TimeUnit.MILLISECONDS);  //スタート画面→黄色い画面→白い画面
     }
 
     /*
      * 実行可能メソッド．このクラスの中では定期実行される
-     *
      * @see java.lang.Runnable#run()
      */
     public void run(){
         mLvTime = System.currentTimeMillis() - mLvStart;
 
         if(state == SECOND){
-            if(mLvTime >= 3000){
+            if(mLvTime >= 10000){  //この中にゲーム中の処理が来る
+                if(mLvTime == 1000){
+
+                }
                 state = THIRD;
             }
         }
@@ -133,20 +123,28 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private void draw(){
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(Color.WHITE);
+        //PopcornSample popco = new PopcornSample();
         Paint p = new Paint();
         if (state == FIRST) { //状態 1 の場合の描画
             canvas.drawBitmap(bmp, 300, 1150, p);
             Log.v("draw", "スタート画面");
         } else if (state == SECOND) { //状態 2 の場合の描画
             canvas.drawARGB(255, 255, 255, 0);
+            //popco.draw(canvas, p);
             Log.v("draw", "状態２になった");
         } else if(state == THIRD) {
             canvas.drawARGB(255, 255, 255, 255);
+            canvas.drawBitmap(bmp, 300, 1050, p);
+            canvas.drawBitmap(bmp, 300, 1200, p);
             Log.v("draw", "状態3になった");
         }
         else { //それ以外の場合は，Log にエラーを吐き出す
             Log.d("error", "never come here");
         }
         mHolder.unlockCanvasAndPost(canvas);
+    }
+
+    private void countDown(){
+
     }
 }
