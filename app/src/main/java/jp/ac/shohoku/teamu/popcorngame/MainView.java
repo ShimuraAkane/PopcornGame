@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.animation.*;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,9 +29,11 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.start);
     PopcornSample[] popcorns = new PopcornSample[10];
 
+
     private SurfaceHolder mHolder;
     private int mGameState;  //ゲームの状態を表す変数
     private long mLvStart, mLvTime;  //レベルの開始とレベルの時間
+    //ArrayList popcos = new ArrayList();
 
     /**
      * コンストラクタ
@@ -49,9 +52,11 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         requestFocus();
         state = FIRST;  //はじめは状態 1
         mLvStart = System.currentTimeMillis();
-        for(int i=0; i<10; i++){
-            popcorns[i] = new PopcornSample(this);
-        }
+        popcorns[0] = new PopcornSample(this);
+//        for(int i=0; i<10; i++){
+//            popcorns[i] = new PopcornSample(this);
+//            //popcos.add(popcorns[i]);
+//        }
     }
 
     @Override
@@ -98,10 +103,13 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         mLvTime = System.currentTimeMillis() - mLvStart;
 
         if(state == SECOND){
+            //popcos.add(0, new PopcornSample(this));
             popcorns[0].move();
-            if(mLvTime >= 10000){  //この中にゲーム中の処理が来る
-                popcorns[0].shokika();
+            //popcos.get(0);
+            if(mLvTime >= 10000){
+                //popcos.clear();
                 state = THIRD;
+                popcorns[0].shokika();
             }
         }
         draw();
@@ -132,9 +140,10 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             Log.v("draw", "スタート画面");
         } else if (state == SECOND) { //状態 2 の場合の描画
             canvas.drawARGB(255, 255, 255, 0);
-            for(int i=0; i<10; i++){
-                popcorns[i].draw(canvas, p, popcorns[i].x, popcorns[i].y);
-            }
+//            for(int i=0; i<10; i++){
+//                popcorns[i].draw(canvas, p, popcorns[i].x, popcorns[i].y);
+//            }
+            popcorns[0].draw(canvas, p, popcorns[0].x, popcorns[0].y);
             Log.v("draw", "状態２になった");
         } else if(state == THIRD) {
             canvas.drawARGB(255, 255, 255, 255);

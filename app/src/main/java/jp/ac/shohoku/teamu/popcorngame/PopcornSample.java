@@ -31,7 +31,7 @@ public class PopcornSample {
     public void shokika(){
         x=600;  //発射点x
         y=500;  //発射点y
-        speed = 10;
+        speed = 15;
         top = false;
     }
 
