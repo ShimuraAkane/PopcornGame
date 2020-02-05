@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.TranslateAnimation;
-
+import java.util.Random;
 
 
 public class PopcornSample {
@@ -20,19 +20,28 @@ public class PopcornSample {
     int x, y;  //発射点
     int speed;
     boolean top;
+    int type;
+    int xType;
+    boolean stop;
+
     public PopcornSample(SurfaceView sView){
-        popcorn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(sView.getResources(), R.drawable.tekitou), 100, 100, true);
-        x=600;  //発射点x
-        y=500;  //発射点y
-        speed = 15;
+        popcorn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(sView.getResources(), R.drawable.dhiguda), 100, 100, true);
+        x=550;  //発射点x
+        y=400;  //発射点y
+        speed = 20;
         top = false;
+        Random random = new Random();
+        type = random.nextInt(6); //0-5
+        xType = type * 4 - 10;
+        stop = false;
     }
 
     public void shokika(){
-        x=600;  //発射点x
-        y=500;  //発射点y
-        speed = 15;
+        x=550;  //発射点x
+        y=400;  //発射点y
+        speed = 20;
         top = false;
+        stop = false;
     }
 
     public void draw(Canvas canvas, Paint paint, int x, int y){
@@ -40,20 +49,23 @@ public class PopcornSample {
     }
 
     public void move(){
-        //Random random = new Random();
-        //randomValue = random.nextInt(1);
-        this.x = this.x + 10;
-        if(this.y < 350){
-            top = true;
-        }
-        if(top == false){
-            this.y = this.y - this.speed;
-            speed = speed - 2;
-        } else{
-            this.y = this.y + this.speed;
-            speed = speed + 2;
-        }
 
+        if(stop == false){
+            this.x = this.x + xType;
+
+            if(this.y < 100){
+                top = true;
+            }
+            if (top == false){
+                this.y = this.y - this.speed;
+                speed = speed - 2;
+            } else{
+                this.y = this.y + this.speed;
+                speed = speed + 2;
+            }
+            if(this.y > 1300){
+                stop = true;
+            }
+        }
     }
-
 }
