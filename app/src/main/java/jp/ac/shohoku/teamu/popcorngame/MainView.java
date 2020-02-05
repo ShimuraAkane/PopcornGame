@@ -121,7 +121,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             if(mLvTime >= 12000) {
                 gameFlag = false;
             }
-            if(mLvTime >= 13000) {
+            if(mLvTime >= 13500) {
                 state = THIRD;
                 for(int i=0; i<popcornNum; i++){
                     popcorns.get(i).shokika();
@@ -172,7 +172,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }else if(mLvTime <= 4000){
                 canvas.drawText("GO", 450, 700, p);
             }
-            if(gameFlag == false && mLvTime >= 12500){
+            if(gameFlag == false && mLvTime >= 12000){
                 canvas.drawText("FINISH", 450, 700, p);
             }
 
