@@ -11,6 +11,17 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.animation.*;
+import android.media.AudioManager;
+
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -21,6 +32,9 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     public final int FIRST = 1; //タイトル画面
     public final int SECOND = 2; //プレイ画面
     public final int THIRD = 3; //ゲームリザルト
+    private MediaPlayer titlePlayer;  // タイトルのBGM用
+    private MediaPlayer playPlayer;   // ゲームプレイ中のBGM用
+    private MediaPlayer resultPlayer; // リザルト画面のBGM用
     int state; //状態を表す変数
     Bitmap start = BitmapFactory.decodeResource(getResources(), R.drawable.start);
     Bitmap retry = BitmapFactory.decodeResource(getResources(), R.drawable.retry);
@@ -50,6 +64,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         setFocusable(true);
         requestFocus();
         state = FIRST;  //はじめは状態 1
+        titlePlay();    //タイトルのBGM
         mLvStart = System.currentTimeMillis();
         for(int i=0; i<10; i++){
             popcorns.add(new PopcornSample(this));
@@ -68,6 +83,8 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
 
         if (state == FIRST) {  //状態１だったら状態２へ
             if(x>300 && x<900 && y>1150 && y<1250) {
+                titleStop();  // タイトルBGMをストップ
+                playPlay();   // ゲーム中のBGMをスタート
                 state = SECOND;
                 mLvStart = System.currentTimeMillis();
             }
@@ -78,16 +95,20 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }
         } else if(state == THIRD){  //状態３だったら状態1へ
             if(x>300 && x<900 && y>1050 && y<1150) {  //リトライ
+                resultStop();  // 一旦止める 止めないとエラーが起こるから
+                playPlay();  // またスタートさせる
                 popcornNum = 0;
                 state = SECOND;
                 mLvStart = System.currentTimeMillis();
             }
             if(x>300 && x<900 && y>1200 && y<1300) {  //タイトル画面へ
+                resultStop();  // ゲーム中のBGMをストップ
                 for(i = 0; i < popcornNum; i++){
                     popcorns.get(i).shokika();
                 }
                 popcornNum = 0;
                 state = FIRST;
+                titlePlay(); // タイトルBGMをスタート
             }
         }
         else {  //それ以外だったらエラーを吐き出す
@@ -123,6 +144,8 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }
             if(mLvTime >= 13500) {
                 state = THIRD;
+                playStop();
+                resultPlay();
                 for(int i=0; i<popcornNum; i++){
                     popcorns.get(i).shokika();
                 }
@@ -142,9 +165,10 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
 
     }
 
+    // SurfaceViewが終了した時に呼び出される
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
+        titleStop();  // アプリが終了したら音楽を止める
     }
 
     private void draw(){
@@ -196,4 +220,203 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private void countDown(){
 
     }
+
+    // ここからBGM
+    private boolean titleSetup(){
+        boolean fileCheck = false;
+
+        // 繰り返し再生する場合
+        if (titlePlayer != null) {
+            titlePlayer.stop();
+            titlePlayer.reset();
+            // リソースの解放
+            titlePlayer.release();
+        }
+
+        // rawにファイルがある場合
+        titlePlayer = MediaPlayer.create(getContext(), R.raw.title);
+        // 無限ループ
+        titlePlayer.setLooping(true);
+        fileCheck = true;
+
+        return fileCheck;
+
+    }
+
+    private void titlePlay() {
+
+        if (titlePlayer == null) {
+            // audio ファイルを読出し
+            if (titleSetup()){
+                //Toast.makeText(getApplication(), "Rread audio file", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                //Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        else{
+            // 繰り返し再生する場合
+            titlePlayer.stop();
+            titlePlayer.reset();
+            // リソースの解放
+            titlePlayer.release();
+        }
+
+        // 再生する
+        titlePlayer.start();
+
+        // 終了を検知するリスナー
+        titlePlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d("debug","end of audio");
+                //audioStop();
+            }
+        });
+    }
+
+    private void titleStop() {
+        // 再生終了
+        titlePlayer.stop();
+        // リセット
+        titlePlayer.reset();
+        // リソースの解放
+        titlePlayer.release();
+
+        titlePlayer = null;
+    }
+
+    private boolean playSetup(){
+        boolean fileCheck = false;
+
+        // 繰り返し再生する場合
+        if (playPlayer != null) {
+            playPlayer.stop();
+            playPlayer.reset();
+            // リソースの解放
+            playPlayer.release();
+        }
+
+        // rawにファイルがある場合
+        playPlayer = MediaPlayer.create(getContext(), R.raw.play);
+        // 無限ループ
+        playPlayer.setLooping(true);
+        fileCheck = true;
+
+        return fileCheck;
+
+    }
+
+    private void playPlay() {
+
+        if (playPlayer == null) {
+            // audio ファイルを読出し
+            if (playSetup()){
+                //Toast.makeText(getApplication(), "Rread audio file", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                //Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        else{
+            // 繰り返し再生する場合
+            playPlayer.stop();
+            playPlayer.reset();
+            // リソースの解放
+            playPlayer.release();
+        }
+
+        // 再生する
+        playPlayer.start();
+
+        // 終了を検知するリスナー
+        playPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d("debug","end of audio");
+                //audioStop();
+            }
+        });
+    }
+
+    private void playStop() {
+        // 再生終了
+        playPlayer.stop();
+        // リセット
+        playPlayer.reset();
+        // リソースの解放
+        playPlayer.release();
+
+        playPlayer = null;
+    }
+
+    private boolean resultSetup(){
+        boolean fileCheck = false;
+
+        // 繰り返し再生する場合
+        if (resultPlayer != null) {
+            resultPlayer.stop();
+            resultPlayer.reset();
+            // リソースの解放
+            resultPlayer.release();
+        }
+
+        // rawにファイルがある場合
+        resultPlayer = MediaPlayer.create(getContext(), R.raw.result);
+        // 無限ループ
+        resultPlayer.setLooping(true);
+        fileCheck = true;
+
+        return fileCheck;
+
+    }
+
+    private void resultPlay() {
+
+        if (resultPlayer == null) {
+            // audio ファイルを読出し
+            if (resultSetup()){
+                //Toast.makeText(getApplication(), "Rread audio file", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                //Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        else{
+            // 繰り返し再生する場合
+            resultPlayer.stop();
+            resultPlayer.reset();
+            // リソースの解放
+            resultPlayer.release();
+        }
+
+        // 再生する
+        resultPlayer.start();
+
+        // 終了を検知するリスナー
+        resultPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d("debug","end of audio");
+                //audioStop();
+            }
+        });
+    }
+
+    private void resultStop() {
+        // 再生終了
+        resultPlayer.stop();
+        // リセット
+        resultPlayer.reset();
+        // リソースの解放
+        resultPlayer.release();
+
+        resultPlayer = null;
+    }
+
+
+
 }
