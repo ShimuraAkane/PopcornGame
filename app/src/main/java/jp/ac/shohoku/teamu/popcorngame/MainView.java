@@ -11,17 +11,9 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.animation.*;
-import android.media.AudioManager;
 
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -36,17 +28,36 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private MediaPlayer playPlayer;   // ゲームプレイ中のBGM用
     private MediaPlayer resultPlayer; // リザルト画面のBGM用
     int state; //状態を表す変数
-    Bitmap start = BitmapFactory.decodeResource(getResources(), R.drawable.start);
-    Bitmap retry = BitmapFactory.decodeResource(getResources(), R.drawable.retry);
-    Bitmap title = BitmapFactory.decodeResource(getResources(), R.drawable.start);
-    Bitmap popcornCover = BitmapFactory.decodeResource(getResources(), R.drawable.popcover);
-    //Bitmap[] number = new Bitmap[10];
+
+    Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+    Bitmap titleLogo = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+    Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.start);
+
+    Bitmap popcornMorimori0 = BitmapFactory.decodeResource(getResources(), R.drawable.pop0);
+    Bitmap popcornMorimori1 = BitmapFactory.decodeResource(getResources(), R.drawable.pop1);
+    Bitmap popcornMorimori2 = BitmapFactory.decodeResource(getResources(), R.drawable.pop2);
+    Bitmap popcornMorimori3 = BitmapFactory.decodeResource(getResources(), R.drawable.pop3);
+    Bitmap popcornMorimori4 = BitmapFactory.decodeResource(getResources(), R.drawable.pop4);
+    Bitmap popcornMorimori5 = BitmapFactory.decodeResource(getResources(), R.drawable.pop5);
+    Bitmap go = BitmapFactory.decodeResource(getResources(), R.drawable.go);
+    Bitmap finish = BitmapFactory.decodeResource(getResources(), R.drawable.finish);
+
+    Bitmap score = BitmapFactory.decodeResource(getResources(), R.drawable.score);
+    Bitmap retryButton = BitmapFactory.decodeResource(getResources(), R.drawable.retry);
+    Bitmap titleButton = BitmapFactory.decodeResource(getResources(), R.drawable.title);
+
+    /* 数字 */
+    Bitmap[] number = new Bitmap[10];
 
     private SurfaceHolder mHolder;
-    private long mLvStart, mLvTime;  //レベルの開始とレベルの時間
+    private long gameStart, gameTime;  //レベルの開始とレベルの時間
     ArrayList<PopcornSample> popcorns = new ArrayList<PopcornSample>();
     private int popcornNum;
     private boolean gameFlag;
+    private SensorManager graSensorManager;
+    private AccelerationGraSensor accelerationGraSensor;
+    private float sensorNum;
+    private int scoreNum;
 
     /**
      * コンストラクタ
@@ -63,14 +74,31 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         mHolder.addCallback(this);
         setFocusable(true);
         requestFocus();
+
+        //number[0] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+        number[1] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+        number[2] = BitmapFactory.decodeResource(getResources(), R.drawable.two);
+        number[3] = BitmapFactory.decodeResource(getResources(), R.drawable.three);
+//        number[4] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+//        number[5] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+//        number[6] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+//        number[7] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+//        number[8] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+//        number[9] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
+
         state = FIRST;  //はじめは状態 1
         titlePlay();    //タイトルのBGM
-        mLvStart = System.currentTimeMillis();
+        gameStart = System.currentTimeMillis();
         for(int i=0; i<10; i++){
             popcorns.add(new PopcornSample(this));
         }
         popcornNum = 0;
+        scoreNum = 0;
         gameFlag = false;
+    }
+
+    public void setSensorValue(float sensorValue){
+        sensorNum = sensorValue;
     }
 
     @Override
@@ -82,34 +110,37 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         //長方形の内部で
 
         if (state == FIRST) {  //状態１だったら状態２へ
-            if(x>300 && x<900 && y>1150 && y<1250) {
+            if(x>300 && x<900 && y>1150 && y<1300) {
                 titleStop();  // タイトルBGMをストップ
                 playPlay();   // ゲーム中のBGMをスタート
                 state = SECOND;
-                mLvStart = System.currentTimeMillis();
+                gameStart = System.currentTimeMillis();
             }
         } else if (state == SECOND) {  //状態２だったら
-            if(gameFlag == true){
-                popcorns.add(new PopcornSample(this));
-                popcornNum++;
-            }
+
         } else if(state == THIRD){  //状態３だったら状態1へ
-            if(x>300 && x<900 && y>1050 && y<1150) {  //リトライ
-                resultStop();  // 一旦止める 止めないとエラーが起こるから
-                playPlay();  // またスタートさせる
-                popcornNum = 0;
-                state = SECOND;
-                mLvStart = System.currentTimeMillis();
-            }
-            if(x>300 && x<900 && y>1200 && y<1300) {  //タイトル画面へ
-                resultStop();  // ゲーム中のBGMをストップ
-                for(i = 0; i < popcornNum; i++){
-                    popcorns.get(i).shokika();
+
+            if(scoreNum == popcornNum){
+                if(x>300 && x<900 && y>1050 && y<1200) {  //リトライ
+                    resultStop();  // 一旦止める 止めないとエラーが起こるから
+                    playPlay();  // またスタートさせる
+                    popcornNum = 0;
+                    scoreNum = 0;
+                    state = SECOND;
+                    gameStart = System.currentTimeMillis();
                 }
-                popcornNum = 0;
-                state = FIRST;
-                titlePlay(); // タイトルBGMをスタート
+                if(x>300 && x<900 && y>1300 && y<1450) {  //タイトル画面へ
+                    resultStop();  // ゲーム中のBGMをストップ
+                    for(i = 0; i < popcornNum; i++){
+                        popcorns.get(i).shokika();
+                    }
+                    popcornNum = 0;
+                    scoreNum = 0;
+                    state = FIRST;
+                    titlePlay(); // タイトルBGMをスタート
+                }
             }
+
         }
         else {  //それ以外だったらエラーを吐き出す
             Log.d("error", "never come here");
@@ -129,20 +160,52 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
      * @see java.lang.Runnable#run()
      */
     public void run(){
-        mLvTime = System.currentTimeMillis() - mLvStart;
+        gameTime = System.currentTimeMillis() - gameStart;
         if (state == SECOND) {
-            if(mLvTime >= 3000){
-                gameFlag = true;
-            }
-            if(gameFlag == true){
-                for(int i=0; i<popcornNum; i++) {
-                    popcorns.get(i).move();
+
+            if(gameTime >= 3000){
+                if(gameTime >= 18000) {
+                    gameFlag = false;
+                }else{
+                    gameFlag = true;
                 }
             }
-            if(mLvTime >= 12000) {
-                gameFlag = false;
+            if(gameFlag == true){
+
+                if(sensorNum >= 5){
+                    popcorns.add(new PopcornSample(this));
+                    popcornNum++;
+                    if(sensorNum >= 20){
+                        popcorns.add(new PopcornSample(this));
+                        popcornNum++;
+                        if(sensorNum >= 30){
+                            popcorns.add(new PopcornSample(this));
+                            popcornNum++;
+                        }
+
+                    }
+                }
+                if(sensorNum <= -5){
+                    popcorns.add(new PopcornSample(this));
+                    popcornNum++;
+                    if(sensorNum <= -20){
+                        popcorns.add(new PopcornSample(this));
+                        popcornNum++;
+                        if(sensorNum <= -30){
+                            popcorns.add(new PopcornSample(this));
+                            popcornNum++;
+                        }
+                    }
+                }
+
+
             }
-            if(mLvTime >= 13500) {
+
+            for(int i=0; i<popcornNum; i++) {
+                popcorns.get(i).move();
+            }
+
+            if(gameTime >= 21000) {
                 state = THIRD;
                 playStop();
                 resultPlay();
@@ -176,49 +239,80 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         canvas.drawColor(Color.WHITE);
         Paint p = new Paint();
         p.setTextSize(200);
+        canvas.drawBitmap(background, 0, 0, p);
         if (state == FIRST) { //状態 1 の場合の描画
-            canvas.drawBitmap(start, 300, 1150, p);
+
+            canvas.drawBitmap(titleLogo, 100, 0, p);
+
+            canvas.drawBitmap(startButton, 300, 1150, p);
             Log.v("draw", "スタート画面");
         }
         else if (state == SECOND) { //状態 2 の場合の描画
-            canvas.drawARGB(255, 255, 255, 0);
+            //canvas.drawARGB(255, 255, 255, 0);
 
             for(int i=0; i<popcornNum; i++){
                 popcorns.get(popcornNum).draw(canvas, p, popcorns.get(i).x, popcorns.get(i).y);
             }
 
-            if(mLvTime <= 1000){
-                canvas.drawText("3", 500, 700, p);
-            }else if(mLvTime <= 2000){
-                canvas.drawText("2", 500, 700, p);
-            }else if(mLvTime <= 3000){
-                canvas.drawText("1", 500, 700, p);
-            }else if(mLvTime <= 4000){
-                canvas.drawText("GO", 450, 700, p);
-            }
-            if(gameFlag == false && mLvTime >= 12000){
-                canvas.drawText("FINISH", 450, 700, p);
+            if(gameTime <= 1000){
+                canvas.drawBitmap(number[3], 450, 500, p);
+            }else if(gameTime <= 2000){
+                canvas.drawBitmap(number[2], 450, 500, p);
+            }else if(gameTime <= 3000){
+                canvas.drawBitmap(number[1], 450, 500, p);
+            }else if(gameTime <= 4000){
+                canvas.drawBitmap(go, 450, 500, p);
             }
 
-            canvas.drawBitmap(popcornCover, 100, 1250, p);
+
+
+            if(popcornNum < 100){
+                canvas.drawBitmap(popcornMorimori0, 90, 100, p);
+            }else if(popcornNum < 200){
+                canvas.drawBitmap(popcornMorimori1, 90, 100, p);
+            }else if(popcornNum < 300){
+                canvas.drawBitmap(popcornMorimori2, 90, 100, p);
+            }else if(popcornNum < 400){
+                canvas.drawBitmap(popcornMorimori3, 90, 100, p);
+            }else if(popcornNum < 500){
+                canvas.drawBitmap(popcornMorimori4, 90, 100, p);
+            }else{
+                canvas.drawBitmap(popcornMorimori5, 90, 100, p);
+            }
+
+            if(gameFlag == false && gameTime >= 18000 && gameTime <= 21000){
+                canvas.drawBitmap(finish, 450, 500, p);
+            }
             Log.v("draw", "状態２になった");
         }
         else if(state == THIRD) {
-            canvas.drawARGB(255, 255, 255, 255);
-            p.setTextSize(150);
-            canvas.drawText(String.valueOf(popcornNum), 200, 200, p);
-            canvas.drawBitmap(retry, 300, 1050, p);
-            canvas.drawBitmap(start, 300, 1200, p);
+            canvas.drawBitmap(score, 450, 0, p);
+            p.setTextSize(250);
+
+            if(scoreNum < 10){
+                canvas.drawText(String.valueOf(scoreNum), 530, 450, p);
+            }else if(scoreNum < 100){
+                canvas.drawText(String.valueOf(scoreNum), 460, 450, p);
+            }else{
+                canvas.drawText(String.valueOf(scoreNum), 390, 450, p);
+            }
+
+            if(scoreNum < popcornNum){
+                scoreNum++;
+                if(scoreNum < popcornNum){
+                    scoreNum++;
+                }
+            }
+            if(scoreNum == popcornNum){
+                canvas.drawBitmap(retryButton, 300, 1050, p);
+                canvas.drawBitmap(startButton, 300, 1300, p);
+            }
             Log.v("draw", "状態3になった");
         }
         else { //それ以外の場合は，Log にエラーを吐き出す
             Log.d("error", "never come here");
         }
         mHolder.unlockCanvasAndPost(canvas);
-    }
-
-    private void countDown(){
-
     }
 
     // ここからBGM

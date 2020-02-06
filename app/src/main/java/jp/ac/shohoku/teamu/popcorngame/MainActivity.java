@@ -2,13 +2,10 @@ package jp.ac.shohoku.teamu.popcorngame;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,14 +15,15 @@ public class MainActivity extends AppCompatActivity {
     private SensorManager graSensorManager;
     private AccelerationGraSensor accelerationGraSensor;
 
-    private static final int ACCELERATION_INTERVAL_PERIOD = 1000;
     private Timer timer;
+    private MainView mview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mview = (MainView)findViewById(R.id.mainview);
 
         // 音量調整を端末のボタンに任せる
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -33,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         //加速度を取れる状態に設定
         graSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerationGraSensor = new AccelerationGraSensor(graSensorManager);
+
 
     }
 
@@ -47,8 +46,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("accelerX", String.valueOf(accelerationGraSensor.getX()));
                 Log.d("accelerY", String.valueOf(accelerationGraSensor.getY()));
                 Log.d("accelerZ", String.valueOf(accelerationGraSensor.getZ()));
+                mview.setSensorValue(accelerationGraSensor.getY());
             }
-        }, 0, ACCELERATION_INTERVAL_PERIOD);
+        }, 0, 10);
     }
 
     @Override
@@ -56,5 +56,4 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         timer.cancel();
     }
-
 }
