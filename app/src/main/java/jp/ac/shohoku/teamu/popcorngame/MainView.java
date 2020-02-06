@@ -2,6 +2,7 @@ package jp.ac.shohoku.teamu.popcorngame;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.content.Context;
@@ -14,6 +15,8 @@ import android.view.MotionEvent;
 
 import android.media.MediaPlayer;
 import android.hardware.SensorManager;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -33,12 +36,15 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     Bitmap titleLogo = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
     Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.start);
 
+
+    Bitmap popcornMachine = BitmapFactory.decodeResource(getResources(), R.drawable.machine);
     Bitmap popcornMorimori0 = BitmapFactory.decodeResource(getResources(), R.drawable.pop0);
     Bitmap popcornMorimori1 = BitmapFactory.decodeResource(getResources(), R.drawable.pop1);
     Bitmap popcornMorimori2 = BitmapFactory.decodeResource(getResources(), R.drawable.pop2);
     Bitmap popcornMorimori3 = BitmapFactory.decodeResource(getResources(), R.drawable.pop3);
     Bitmap popcornMorimori4 = BitmapFactory.decodeResource(getResources(), R.drawable.pop4);
     Bitmap popcornMorimori5 = BitmapFactory.decodeResource(getResources(), R.drawable.pop5);
+
     Bitmap go = BitmapFactory.decodeResource(getResources(), R.drawable.go);
     Bitmap finish = BitmapFactory.decodeResource(getResources(), R.drawable.finish);
 
@@ -58,6 +64,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private AccelerationGraSensor accelerationGraSensor;
     private float sensorNum;
     private int scoreNum;
+    Paint p = new Paint();
 
     /**
      * コンストラクタ
@@ -99,6 +106,10 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
 
     public void setSensorValue(float sensorValue){
         sensorNum = sensorValue;
+    }
+
+    public void setFont(AppCompatActivity act){
+        p.setTypeface(Typeface.createFromAsset(act.getAssets(), "Kikakana-21-Regular.otf"));
     }
 
     @Override
@@ -237,8 +248,10 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private void draw(){
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(Color.WHITE);
-        Paint p = new Paint();
-        p.setTextSize(200);
+
+        //p.setTypeface(Typeface.createFromAsset())
+
+        p.setTextSize(180);
         canvas.drawBitmap(background, 0, 0, p);
         if (state == FIRST) { //状態 1 の場合の描画
 
@@ -250,6 +263,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         else if (state == SECOND) { //状態 2 の場合の描画
             //canvas.drawARGB(255, 255, 255, 0);
 
+            canvas.drawBitmap(popcornMachine, 0, 0, p);
             for(int i=0; i<popcornNum; i++){
                 popcorns.get(popcornNum).draw(canvas, p, popcorns.get(i).x, popcorns.get(i).y);
             }
@@ -264,22 +278,19 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                 canvas.drawBitmap(go, 450, 500, p);
             }
 
-
-
             if(popcornNum < 100){
-                canvas.drawBitmap(popcornMorimori0, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori0, -12, 0, p);
             }else if(popcornNum < 200){
-                canvas.drawBitmap(popcornMorimori1, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori1, -12, 0, p);
             }else if(popcornNum < 300){
-                canvas.drawBitmap(popcornMorimori2, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori2, -12, 0, p);
             }else if(popcornNum < 400){
-                canvas.drawBitmap(popcornMorimori3, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori3, -12, 0, p);
             }else if(popcornNum < 500){
-                canvas.drawBitmap(popcornMorimori4, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori4, -12, 0, p);
             }else{
-                canvas.drawBitmap(popcornMorimori5, 90, 100, p);
+                canvas.drawBitmap(popcornMorimori5, -12, 0, p);
             }
-
             if(gameFlag == false && gameTime >= 18000 && gameTime <= 21000){
                 canvas.drawBitmap(finish, 450, 500, p);
             }
@@ -287,7 +298,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         }
         else if(state == THIRD) {
             canvas.drawBitmap(score, 450, 0, p);
-            p.setTextSize(250);
+            p.setTextSize(200);
 
             if(scoreNum < 10){
                 canvas.drawText(String.valueOf(scoreNum), 530, 450, p);
