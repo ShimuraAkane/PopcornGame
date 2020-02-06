@@ -82,16 +82,9 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         setFocusable(true);
         requestFocus();
 
-        //number[0] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
         number[1] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
         number[2] = BitmapFactory.decodeResource(getResources(), R.drawable.two);
         number[3] = BitmapFactory.decodeResource(getResources(), R.drawable.three);
-//        number[4] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
-//        number[5] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
-//        number[6] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
-//        number[7] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
-//        number[8] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
-//        number[9] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
 
         state = FIRST;  //はじめは状態 1
         titlePlay();    //タイトルのBGM
@@ -193,7 +186,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                             popcorns.add(new PopcornSample(this));
                             popcornNum++;
                         }
-
                     }
                 }
                 if(sensorNum <= -5){
@@ -208,8 +200,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                         }
                     }
                 }
-
-
             }
 
             for(int i=0; i<popcornNum; i++) {
@@ -248,9 +238,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private void draw(){
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(Color.WHITE);
-
-        //p.setTypeface(Typeface.createFromAsset())
-
         p.setTextSize(180);
         canvas.drawBitmap(background, 0, 0, p);
         if (state == FIRST) { //状態 1 の場合の描画
@@ -261,8 +248,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             Log.v("draw", "スタート画面");
         }
         else if (state == SECOND) { //状態 2 の場合の描画
-            //canvas.drawARGB(255, 255, 255, 0);
-
             canvas.drawBitmap(popcornMachine, 0, 0, p);
             for(int i=0; i<popcornNum; i++){
                 popcorns.get(popcornNum).draw(canvas, p, popcorns.get(i).x, popcorns.get(i).y);
