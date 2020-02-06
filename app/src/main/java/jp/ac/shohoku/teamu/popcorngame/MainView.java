@@ -316,7 +316,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }
             if(scoreNum == popcornNum){
                 canvas.drawBitmap(retryButton, 300, 1050, p);
-                canvas.drawBitmap(startButton, 300, 1300, p);
+                canvas.drawBitmap(titleButton, 300, 1300, p);
             }
             Log.v("draw", "状態3になった");
         }
