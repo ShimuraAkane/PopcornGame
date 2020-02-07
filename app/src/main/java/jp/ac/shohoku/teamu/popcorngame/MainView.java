@@ -66,6 +66,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private int scoreNum;
     Paint p = new Paint();
 
+
     /**
      * コンストラクタ
      * @param context
@@ -175,7 +176,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                 }
             }
             if(gameFlag == true){
-
                 if(sensorNum >= 5){
                     popcorns.add(new PopcornSample(this));
                     popcornNum++;
@@ -243,7 +243,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         if (state == FIRST) { //状態 1 の場合の描画
 
             canvas.drawBitmap(titleLogo, 100, 0, p);
-
             canvas.drawBitmap(startButton, 300, 1150, p);
             Log.v("draw", "スタート画面");
         }
@@ -252,7 +251,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             for(int i=0; i<popcornNum; i++){
                 popcorns.get(popcornNum).draw(canvas, p, popcorns.get(i).x, popcorns.get(i).y);
             }
-
             if(gameTime <= 1000){
                 canvas.drawBitmap(number[3], 450, 500, p);
             }else if(gameTime <= 2000){
@@ -262,7 +260,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }else if(gameTime <= 4000){
                 canvas.drawBitmap(go, 450, 500, p);
             }
-
             if(popcornNum < 100){
                 canvas.drawBitmap(popcornMorimori0, -12, 0, p);
             }else if(popcornNum < 200){
@@ -284,7 +281,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         else if(state == THIRD) {
             canvas.drawBitmap(score, 450, 0, p);
             p.setTextSize(200);
-
             if(scoreNum < 10){
                 canvas.drawText(String.valueOf(scoreNum), 530, 450, p);
             }else if(scoreNum < 100){
@@ -292,7 +288,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }else{
                 canvas.drawText(String.valueOf(scoreNum), 390, 450, p);
             }
-
             if(scoreNum < popcornNum){
                 scoreNum++;
                 if(scoreNum < popcornNum){
