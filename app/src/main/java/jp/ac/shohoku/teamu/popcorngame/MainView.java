@@ -3,6 +3,7 @@ package jp.ac.shohoku.teamu.popcorngame;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.content.Context;
@@ -22,6 +23,10 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 
 public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Callback {
     public final int FIRST = 1; //タイトル画面
@@ -67,6 +72,13 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     Paint p = new Paint();
 
 
+    //音楽用のフィールドとSoundPoolのフィールド
+    int hue;
+    SoundPool soundPool;
+
+    //音楽再生用のメソッド
+    public void pipi(){soundPool.play(hue,1f , 1f, 0, 0, 1f);};
+
     /**
      * コンストラクタ
      * @param context
@@ -75,6 +87,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     public MainView(Context context, AttributeSet attrs) {
         super (context, attrs);
         init();
+        Hue();
     }
 
     private void init() {  //初期化
@@ -257,6 +270,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                 canvas.drawBitmap(number[2], 450, 500, p);
             }else if(gameTime <= 3000){
                 canvas.drawBitmap(number[1], 450, 500, p);
+                pipi();
             }else if(gameTime <= 4000){
                 canvas.drawBitmap(go, 450, 500, p);
             }
@@ -272,6 +286,10 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                 canvas.drawBitmap(popcornMorimori4, -12, 0, p);
             }else{
                 canvas.drawBitmap(popcornMorimori5, -12, 0, p);
+            }
+
+            if(gameTime >= 15000 && gameTime <=18000){
+                pipi();
             }
             if(gameFlag == false && gameTime >= 18000 && gameTime <= 21000){
                 canvas.drawBitmap(finish, 450, 500, p);
@@ -502,6 +520,28 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         resultPlayer = null;
     }
 
+    // 効果音の初期化
+    private void Hue(){
+        //soundPoolの初期化
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+
+            //1個目のパラメーターはリソースの数に合わせる
+            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+
+        } else {
+            AudioAttributes attr = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            soundPool = new SoundPool.Builder()
+                    .setAudioAttributes(attr)
+                    //パラメーターはリソースの数に合わせる
+                    .setMaxStreams(1)
+                    .build();
+        }
+        //音楽の読み込み
+        hue = soundPool.load(getContext(), R.raw.hue, 1);
+    }
 
 
 }

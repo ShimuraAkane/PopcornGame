@@ -1,5 +1,6 @@
 package jp.ac.shohoku.teamu.popcorngame;
 
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,6 +22,8 @@ public class AccelerationGraSensor implements SensorEventListener {
     public synchronized float getY() {
         return this.currentAccelerationValues[1];
     }
+
+
 
     public synchronized float getZ() {
         return this.currentAccelerationValues[2];

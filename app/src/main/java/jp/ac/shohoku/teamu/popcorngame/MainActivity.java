@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         accelerationGraSensor = new AccelerationGraSensor(graSensorManager);
 
         mview.setFont(this);
+
     }
 
     @Override
