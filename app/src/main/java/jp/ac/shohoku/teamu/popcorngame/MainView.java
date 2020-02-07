@@ -41,7 +41,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     Bitmap titleLogo = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
     Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.start);
 
-
     Bitmap popcornMachine = BitmapFactory.decodeResource(getResources(), R.drawable.machine);
     Bitmap popcornMorimori0 = BitmapFactory.decodeResource(getResources(), R.drawable.pop0);
     Bitmap popcornMorimori1 = BitmapFactory.decodeResource(getResources(), R.drawable.pop1);
@@ -49,16 +48,18 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     Bitmap popcornMorimori3 = BitmapFactory.decodeResource(getResources(), R.drawable.pop3);
     Bitmap popcornMorimori4 = BitmapFactory.decodeResource(getResources(), R.drawable.pop4);
     Bitmap popcornMorimori5 = BitmapFactory.decodeResource(getResources(), R.drawable.pop5);
-
     Bitmap go = BitmapFactory.decodeResource(getResources(), R.drawable.go);
     Bitmap finish = BitmapFactory.decodeResource(getResources(), R.drawable.finish);
 
     Bitmap score = BitmapFactory.decodeResource(getResources(), R.drawable.score);
+    Bitmap rank1 = BitmapFactory.decodeResource(getResources(), R.drawable.rank1);
+    Bitmap rank2 = BitmapFactory.decodeResource(getResources(), R.drawable.rank2);
+    Bitmap rank3 = BitmapFactory.decodeResource(getResources(), R.drawable.rank3);
     Bitmap retryButton = BitmapFactory.decodeResource(getResources(), R.drawable.retry);
     Bitmap titleButton = BitmapFactory.decodeResource(getResources(), R.drawable.title);
 
     /* 数字 */
-    Bitmap[] number = new Bitmap[10];
+    Bitmap[] number = new Bitmap[4];
 
     private SurfaceHolder mHolder;
     private long gameStart, gameTime;  //レベルの開始とレベルの時間
@@ -69,8 +70,11 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private AccelerationGraSensor accelerationGraSensor;
     private float sensorNum;
     private int scoreNum;
-    Paint p = new Paint();
-
+    private Canvas canvas;
+    private Paint p = new Paint();
+    private int[] ranking = new int[3];
+    private boolean rankingFlag;
+    private int rankIn;
 
     //音楽用のフィールドとSoundPoolのフィールド
     int hue;
@@ -95,11 +99,9 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         mHolder.addCallback(this);
         setFocusable(true);
         requestFocus();
-
         number[1] = BitmapFactory.decodeResource(getResources(), R.drawable.one);
         number[2] = BitmapFactory.decodeResource(getResources(), R.drawable.two);
         number[3] = BitmapFactory.decodeResource(getResources(), R.drawable.three);
-
         state = FIRST;  //はじめは状態 1
         titlePlay();    //タイトルのBGM
         gameStart = System.currentTimeMillis();
@@ -109,6 +111,11 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         popcornNum = 0;
         scoreNum = 0;
         gameFlag = false;
+        for(int i = 0; i < 3; i++){
+            ranking[i] = 0;
+        }
+        rankingFlag = false;
+        rankIn = -1;
     }
 
     public void setSensorValue(float sensorValue){
@@ -118,7 +125,12 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     public void setFont(AppCompatActivity act){
         p.setTypeface(Typeface.createFromAsset(act.getAssets(), "Kikakana-21-Regular.otf"));
     }
-
+    public void shokika(){
+        popcorns.clear();
+        for(int i=0; i<10; i++){
+            popcorns.add(new PopcornSample(this));
+        }
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event){
         int x = (int) event.getX();
@@ -137,7 +149,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         } else if (state == SECOND) {  //状態２だったら
 
         } else if(state == THIRD){  //状態３だったら状態1へ
-
+            this.shokika();
             if(scoreNum == popcornNum){
                 if(x>300 && x<900 && y>1050 && y<1200) {  //リトライ
                     resultStop();  // 一旦止める 止めないとエラーが起こるから
@@ -145,34 +157,31 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                     popcornNum = 0;
                     scoreNum = 0;
                     state = SECOND;
+                    rankingFlag = false;
+                    rankIn = -1;
                     gameStart = System.currentTimeMillis();
                 }
                 if(x>300 && x<900 && y>1300 && y<1450) {  //タイトル画面へ
                     resultStop();  // ゲーム中のBGMをストップ
-                    for(i = 0; i < popcornNum; i++){
-                        popcorns.get(i).shokika();
-                    }
                     popcornNum = 0;
                     scoreNum = 0;
                     state = FIRST;
+                    rankingFlag = false;
+                    rankIn = -1;
                     titlePlay(); // タイトルBGMをスタート
                 }
             }
-
         }
         else {  //それ以外だったらエラーを吐き出す
             Log.d("error", "never come here");
         }
-
         invalidate();  //再描画
         return super.onTouchEvent(event);
     }
-
     private void start(){
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(this, 10, 10, TimeUnit.MILLISECONDS);  //スタート画面→黄色い画面→白い画面
     }
-
     /*
      * 実行可能メソッド．このクラスの中では定期実行される
      * @see java.lang.Runnable#run()
@@ -180,7 +189,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     public void run(){
         gameTime = System.currentTimeMillis() - gameStart;
         if (state == SECOND) {
-
             if(gameTime >= 3000){
                 if(gameTime >= 18000) {
                     gameFlag = false;
@@ -214,18 +222,13 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                     }
                 }
             }
-
             for(int i=0; i<popcornNum; i++) {
                 popcorns.get(i).move();
             }
-
             if(gameTime >= 21000) {
                 state = THIRD;
                 playStop();
                 resultPlay();
-                for(int i=0; i<popcornNum; i++){
-                    popcorns.get(i).shokika();
-                }
             }
         }
         draw();
@@ -238,9 +241,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
-    }
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) { }
 
     // SurfaceViewが終了した時に呼び出される
     @Override
@@ -249,18 +250,17 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     }
 
     private void draw(){
-        Canvas canvas = mHolder.lockCanvas();
+        canvas = mHolder.lockCanvas();
         canvas.drawColor(Color.WHITE);
         p.setTextSize(180);
         canvas.drawBitmap(background, 0, 0, p);
         if (state == FIRST) { //状態 1 の場合の描画
-
             canvas.drawBitmap(titleLogo, 100, 0, p);
             canvas.drawBitmap(startButton, 300, 1150, p);
             Log.v("draw", "スタート画面");
         }
         else if (state == SECOND) { //状態 2 の場合の描画
-            canvas.drawBitmap(popcornMachine, 0, 0, p);
+            canvas.drawBitmap(popcornMachine, -12, 0, p);
             for(int i=0; i<popcornNum; i++){
                 popcorns.get(popcornNum).draw(canvas, p, popcorns.get(i).x, popcorns.get(i).y);
             }
@@ -287,7 +287,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             }else{
                 canvas.drawBitmap(popcornMorimori5, -12, 0, p);
             }
-
             if(gameTime >= 15000 && gameTime <=18000){
                 pipi();
             }
@@ -300,11 +299,11 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             canvas.drawBitmap(score, 450, 0, p);
             p.setTextSize(200);
             if(scoreNum < 10){
-                canvas.drawText(String.valueOf(scoreNum), 530, 450, p);
+                canvas.drawText(String.valueOf(scoreNum), 525, 455, p);
             }else if(scoreNum < 100){
-                canvas.drawText(String.valueOf(scoreNum), 460, 450, p);
+                canvas.drawText(String.valueOf(scoreNum), 450, 455, p);
             }else{
-                canvas.drawText(String.valueOf(scoreNum), 390, 450, p);
+                canvas.drawText(String.valueOf(scoreNum), 375, 455, p);
             }
             if(scoreNum < popcornNum){
                 scoreNum++;
@@ -312,7 +311,51 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
                     scoreNum++;
                 }
             }
+            Log.v("draw", "ranking前");
+            Log.v("draw", "popscore:" + popcornNum);
+            if(rankingFlag == false){
+                if(popcornNum > ranking[0]){
+                    ranking[2] = ranking[1];
+                    ranking[1] = ranking[0];
+                    ranking[0] = popcornNum;
+                    rankIn = 0;
+                }else if(popcornNum > ranking[1]){
+                    ranking[2] = ranking[1];
+                    ranking[1] = popcornNum;
+                    rankIn = 1;
+                }else if(popcornNum > ranking[2]){
+                    ranking[2] = popcornNum;
+                    rankIn = 2;
+                }
+                Log.v("draw", "ranking終了");
+                rankingFlag = true;
+            }
+
             if(scoreNum == popcornNum){
+                p.setTextSize(75);
+                for(int i = 0; i < 3; i++){
+                    canvas.drawText(String.valueOf(i+1), 410, 706 + 120 * i, p);
+                    if(ranking[i] <= 0){
+                        canvas.drawText("-", 722, 700 + 120 * i, p);
+                    }else if(ranking[i] < 10){
+                        canvas.drawText(String.valueOf(ranking[i]), 722, 700 + 120 * i, p);
+                    }else if(ranking[i] < 100){
+                        canvas.drawText(String.valueOf(ranking[i]), 666, 700 + 120 * i, p);
+                    }else{
+                        canvas.drawText(String.valueOf(ranking[i]), 610, 700 + 120 * i, p);
+                    }
+                }
+                p.setTextSize(40);
+                if(rankIn == 0){
+                    canvas.drawBitmap(rank1, 250, 606, p);
+                    canvas.drawText("RANK IN!", 850, 685, p);
+                }else if(rankIn == 1){
+                    canvas.drawBitmap(rank2, 250, 726, p);
+                    canvas.drawText("RANK IN!", 850, 805, p);
+                }else if(rankIn == 2){
+                    canvas.drawBitmap(rank3, 250, 846, p);
+                    canvas.drawText("RANK IN!", 850, 925, p);
+                }else{}
                 canvas.drawBitmap(retryButton, 300, 1050, p);
                 canvas.drawBitmap(titleButton, 300, 1300, p);
             }
@@ -327,7 +370,6 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     // ここからBGM
     private boolean titleSetup(){
         boolean fileCheck = false;
-
         // 繰り返し再生する場合
         if (titlePlayer != null) {
             titlePlayer.stop();
@@ -335,15 +377,12 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             // リソースの解放
             titlePlayer.release();
         }
-
         // rawにファイルがある場合
         titlePlayer = MediaPlayer.create(getContext(), R.raw.title);
         // 無限ループ
         titlePlayer.setLooping(true);
         fileCheck = true;
-
         return fileCheck;
-
     }
 
     private void titlePlay() {

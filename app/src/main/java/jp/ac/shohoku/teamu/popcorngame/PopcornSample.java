@@ -6,13 +6,13 @@ import android.graphics.BitmapFactory;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.TranslateAnimation;
 import java.util.Random;
-
 
 public class PopcornSample {
     Bitmap popcorn;
@@ -34,18 +34,26 @@ public class PopcornSample {
         type = random.nextInt(6); //0-5
         xType = type * 4 - 10;
         stop = false;
+        if(!popcorn.isRecycled()){
+            popcorn.recycle();
+        }
+        popcorn = null;
+        popcorn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(sView.getResources(), R.drawable.dhiguda), 100, 100, true);
     }
 
     public void shokika(){
-        x=550;  //発射点x
-        y=400;  //発射点y
-        speed = 20;
-        top = false;
-        stop = false;
+        if(!popcorn.isRecycled()){
+            popcorn.recycle();
+        }
+        if(popcorn != null){
+            popcorn = null;
+        }
     }
 
     public void draw(Canvas canvas, Paint paint, int x, int y){
-        canvas.drawBitmap(popcorn, x, y, paint);
+        if(stop == false){
+            canvas.drawBitmap(popcorn, x, y, paint);
+        }
     }
 
     public void move(){
@@ -65,6 +73,7 @@ public class PopcornSample {
             }
             if(this.y > 1300){
                 stop = true;
+                this.shokika();
             }
         }
     }
