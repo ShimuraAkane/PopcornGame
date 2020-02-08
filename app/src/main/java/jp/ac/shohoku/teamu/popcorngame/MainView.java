@@ -77,11 +77,13 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
     private int rankIn;
 
     //音楽用のフィールドとSoundPoolのフィールド
-    int hue;
+    int hue; // ホイッスル
+    int hop; // ポップコーンがはじける音
     SoundPool soundPool;
 
     //音楽再生用のメソッド
-    public void pipi(){soundPool.play(hue,1f , 1f, 0, 0, 1f);};
+    public void pipi(){soundPool.play(hue,1f , 1f, 0, 0, 1f);}    // GOとFINISHのホイッスルを流す
+    public void pophop(){soundPool.play(hop,1f , 1f, 0, 0, 1f);}  // ポップコーンをポコポコ鳴らす
 
     /**
      * コンストラクタ
@@ -199,24 +201,30 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             if(gameFlag == true){
                 if(sensorNum >= 5){
                     popcorns.add(new PopcornSample(this));
+                    pophop();
                     popcornNum++;
                     if(sensorNum >= 20){
                         popcorns.add(new PopcornSample(this));
+                        pophop();
                         popcornNum++;
                         if(sensorNum >= 30){
                             popcorns.add(new PopcornSample(this));
+                            pophop();
                             popcornNum++;
                         }
                     }
                 }
                 if(sensorNum <= -5){
                     popcorns.add(new PopcornSample(this));
+                    pophop();
                     popcornNum++;
                     if(sensorNum <= -20){
                         popcorns.add(new PopcornSample(this));
+                        pophop();
                         popcornNum++;
                         if(sensorNum <= -30){
                             popcorns.add(new PopcornSample(this));
+                            pophop();
                             popcornNum++;
                         }
                     }
@@ -565,7 +573,7 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 
             //1個目のパラメーターはリソースの数に合わせる
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+            soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
 
         } else {
             AudioAttributes attr = new AudioAttributes.Builder()
@@ -575,11 +583,12 @@ public class MainView extends SurfaceView implements Runnable, SurfaceHolder.Cal
             soundPool = new SoundPool.Builder()
                     .setAudioAttributes(attr)
                     //パラメーターはリソースの数に合わせる
-                    .setMaxStreams(1)
+                    .setMaxStreams(2)
                     .build();
         }
         //音楽の読み込み
         hue = soundPool.load(getContext(), R.raw.hue, 1);
+        hop = soundPool.load(getContext(),R.raw.pop,1);
     }
 
 
